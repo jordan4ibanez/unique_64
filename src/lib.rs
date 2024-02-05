@@ -175,4 +175,27 @@ mod tests {
     // Oops.
     dispatcher.remove(7);
   }
+
+  #[test]
+  pub fn readme_example() {
+    let mut dispatcher = Unique64::new();
+
+    // 0
+    let x = dispatcher.get_next();
+
+    assert!(x == 0);
+
+    // 1
+    let y = dispatcher.get_next();
+
+    assert!(y == 1);
+
+    // 0 is free again.
+    dispatcher.remove(x);
+
+    // 0
+    let z = dispatcher.get_next();
+
+    assert!(z == 0);
+  }
 }
