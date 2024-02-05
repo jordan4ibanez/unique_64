@@ -48,9 +48,9 @@ impl Unique64 {
   }
 
   ///
-  /// Delete a used u64 from the queue.
+  /// Remove a used u64 from the queue.
   ///
-  pub fn delete(&mut self, value: u64) {
+  pub fn remove(&mut self, value: u64) {
     // You can't remove a value, if it doesn't exist.
     if self.available_ids.contains(&value) || value >= self.next_id {
       panic!("Unique64: Attempted to remove a non-existent ID.")
@@ -65,5 +65,114 @@ impl Unique64 {
 impl Default for Unique64 {
   fn default() -> Self {
     Self::new()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn working_correctly() {
+    let mut dispatcher = Unique64::new();
+
+    for _ in 0..1_000 {
+      dispatcher.get_next();
+    }
+
+    assert!(dispatcher.next_id == 1_000);
+
+    for i in 500..1000 {
+      dispatcher.remove(i);
+    }
+
+    assert!(dispatcher.next_id == 1_000);
+    assert!(dispatcher.available_ids.len() == 500);
+
+    for _ in 500..1_000 {
+      // g stands for gotten.
+      let g = dispatcher.get_next();
+      assert!((500..1_000).contains(&g))
+    }
+
+    assert!(dispatcher.next_id == 1_000);
+    assert!(dispatcher.available_ids.is_empty());
+
+    let cool = dispatcher.get_next();
+
+    assert!(cool == 1_000);
+    assert!(dispatcher.available_ids.is_empty());
+    assert!(dispatcher.next_id == 1_001);
+
+    for i in 0..1_000 {
+      dispatcher.remove(i);
+    }
+
+    assert!(dispatcher.available_ids.len() == 1_000);
+    assert!(dispatcher.next_id == 1_001);
+  }
+
+  #[test]
+  fn very_specific() {
+    let mut dispatcher = Unique64::new();
+
+    // 5 values, 0,1,2,3,4
+    for _ in 0..5 {
+      dispatcher.get_next();
+    }
+
+    // It's gonna get kind of weird.
+
+    dispatcher.remove(1);
+
+    assert!(dispatcher.available_ids.get(&1).is_some());
+    assert!(dispatcher.get_next() == 1);
+    assert!(dispatcher.next_id == 5);
+
+    dispatcher.remove(4);
+
+    assert!(dispatcher.available_ids.get(&4).is_some());
+    assert!(dispatcher.get_next() == 4);
+    assert!(dispatcher.next_id == 5);
+
+    dispatcher.remove(2);
+    dispatcher.remove(3);
+    assert!(dispatcher.available_ids.get(&3).is_some());
+    assert!(dispatcher.available_ids.get(&2).is_some());
+    let testing = dispatcher.get_next();
+    assert!(testing == 2 || testing == 3);
+    let testing = dispatcher.get_next();
+    assert!(testing == 2 || testing == 3);
+
+    assert!(dispatcher.next_id == 5);
+  }
+
+  #[test]
+  #[should_panic]
+  pub fn wrong() {
+    let mut dispatcher = Unique64::new();
+    dispatcher.remove(5)
+  }
+
+  #[test]
+  #[should_panic]
+  pub fn wrong_again() {
+    let mut dispatcher = Unique64::new();
+    dispatcher.remove(0)
+  }
+
+  #[test]
+  #[should_panic]
+  pub fn common_mistake() {
+    let mut dispatcher = Unique64::new();
+    for _ in 0..1_000 {
+      dispatcher.get_next();
+    }
+
+    // Lucky 7
+    dispatcher.remove(7);
+
+    // Oops.
+    dispatcher.remove(7);
   }
 }
