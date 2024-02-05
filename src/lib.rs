@@ -52,7 +52,7 @@ impl Unique64 {
   ///
   pub fn delete(&mut self, value: u64) {
     // You can't remove a value, if it doesn't exist.
-    if !self.available_ids.contains(&value) || value <= self.next_id {
+    if self.available_ids.contains(&value) || value >= self.next_id {
       panic!("Unique64: Attempted to remove a non-existent ID.")
     }
 
