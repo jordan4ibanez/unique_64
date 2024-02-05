@@ -22,8 +22,6 @@ fn main() {
 
   // 0
   let z = dispatcher.get_next();
-
-  assert!(z == 0);
 }
 
 ```
