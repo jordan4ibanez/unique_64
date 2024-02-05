@@ -1,5 +1,6 @@
 [package]
 name = "unique_64"
+description = "A handy struct for dispatching out unique u64s as IDs."
 version = "0.1.0"
 edition = "2021"
 
